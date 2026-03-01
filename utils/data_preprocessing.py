@@ -30,7 +30,11 @@ def pad_or_truncate(feat: np.ndarray, max_len: int) -> np.ndarray:
     T, F = feat.shape
     if T >= max_len:
         return feat[:max_len]
-    return np.concatenate([feat, np.zeros((max_len - T, F), dtype=feat.dtype)], axis=0)
+    # Pre-pad: zeros go at the BEGINNING, real audio at the END.
+    # This ensures the RNN's final hidden state h_T reflects the last real
+    # audio frame rather than being contaminated by post-padding zero frames.
+    pad = np.zeros((max_len - T, F), dtype=feat.dtype)
+    return np.concatenate([pad, feat], axis=0)
 
 
 def compute_stats(file_paths: list, n_mfcc: int, sample_rate: int,
